@@ -1,6 +1,6 @@
 {
   "name": "karmen-octoprint-connector",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Connect your OctoPrint box to Karmen cloud service",
   "bin": "./octoprint-connector.js",
   "scripts": {
