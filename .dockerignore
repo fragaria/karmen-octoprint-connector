@@ -1,0 +1,10 @@
+__tools
+.cache/
+node_modules/
+public/
+
+.prettierignore
+.prettierrc
+.travis.yml
+docker-compose.yml
+Dockerfile

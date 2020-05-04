@@ -1,0 +1,32 @@
+{
+  "name": "karmen-octoprint-connector",
+  "version": "0.0.1",
+  "description": "Connect your OctoPrint box to Karmen cloud service",
+  "bin": "./octoprint-connector.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier --write \"octoprint-connector.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fragaria/karmen-octoprint-connector.git"
+  },
+  "keywords": [
+    "karmen",
+    "3dprint",
+    "octoprint",
+    "connector"
+  ],
+  "author": "Fragaria s.r.o.",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/fragaria/karmen-octoprint-connector/issues"
+  },
+  "homepage": "https://github.com/fragaria/karmen-octoprint-connector#readme",
+  "dependencies": {
+    "commander": "^5.1.0",
+    "consola": "^2.11.3",
+    "cuid": "^2.1.8",
+    "karmen_ws": "github:fragaria/websocket-proxy#v0.16"
+  }
+}
