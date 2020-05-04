@@ -4,7 +4,8 @@
 const WebSockProxyClient = require("karmen_ws/client/client")
     .WebSockProxyClient,
   cuid = require("cuid"),
-  consola = require("consola")
+  consola = require("consola"),
+  colors = require('colors')
 const { program } = require("commander")
 const pkg = require("./package")
 
@@ -29,8 +30,9 @@ function openConnection(serverUrl, key, localPort = 80) {
       })
       .on("open", function() {
         consola.success(
-          `Websocket tunnel ${serverUrl} -> OctoPrint box on ${forwardTo} has been opened.`
+          `Websocket tunnel`, colors.green(serverUrl), `-> OctoPrint box on`, colors.green(forwardTo), `has been opened.`
         )
+        consola.info(`Use following to register your device with Karmen:`, colors.cyan(key))
       })
       .on("close", function() {
         consola.info("Connection closed, exitting.")
@@ -50,8 +52,14 @@ if (require.main == module) {
   program
     .command("generate-key")
     .description("Generate a new token for linking with Karmen.")
-    .action(() => {
-      consola.log(`Your Karmen connection key is: ${generateKey()}`)
+    .option("-r, --raw", "Just output the key without info message")
+    .action((options) => {
+      const key = generateKey()
+      if (options.raw) {
+        console.log(key)
+      } else {
+        consola.log(`Your Karmen connection key is:`, colors.cyan(key))
+      }
     })
 
   program

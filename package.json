@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/fragaria/karmen-octoprint-connector#readme",
   "dependencies": {
+    "colors": "^1.4.0",
     "commander": "^5.1.0",
     "consola": "^2.11.3",
     "cuid": "^2.1.8",
