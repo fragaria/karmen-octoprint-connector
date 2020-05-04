@@ -23,10 +23,10 @@ In case you don't have NPM installed, using Docker is probably the easiest optio
 
 ```
 # Generate your connection key and store it
-karmen_key=$(docker run karmen-octoprint-connector:latest generate-key --raw)
+karmen_key=$(docker run fragaria/karmen-octoprint-connector:latest generate-key --raw)
 
 # Open the tunnel
-docker run --init karmen-octoprint-connector:latest connect $karmen_key
+docker run --init fragaria/karmen-octoprint-connector:latest connect $karmen_key
 ```
 
 ## Using npx
