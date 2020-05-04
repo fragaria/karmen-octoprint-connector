@@ -1,0 +1,5 @@
+.dockerignore
+.editorconfig
+.prettierignore
+.prettierrc
+Dockerfile
