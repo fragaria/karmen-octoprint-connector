@@ -15,15 +15,14 @@ function generateKey() {
   return `octoprint/${token}`
 }
 
-function openConnection({ serverUrl, key, localPort = 80, verbosityLevel = 3 } = {}) {
+function openConnection({ serverUrl, key, forward, verbosityLevel }) {
   const wsProxy = new WebSockProxyClient(key)
 
   // Unfortunately cannot find a better way to override.
   config.logVerbosity = verbosityLevel;
 
   return new Promise((resolve, reject) => {
-    const forwardTo = `http://localhost:${localPort}`
-    const connection = wsProxy.connect(serverUrl, { forwardTo })
+    const connection = wsProxy.connect(serverUrl, { forwardTo: forward })
 
     connection
       .on("error", function(err) {
@@ -34,7 +33,7 @@ function openConnection({ serverUrl, key, localPort = 80, verbosityLevel = 3 } =
       })
       .on("open", function() {
         consola.success(
-          `Websocket tunnel`, colors.green(serverUrl), `-> OctoPrint box on`, colors.green(forwardTo), `has been opened.`
+          `Websocket tunnel`, colors.green(serverUrl), `-> OctoPrint box on`, colors.green(forward), `has been opened.`
         )
         consola.info(`Use following to register your device with Karmen:`, colors.cyan(key))
       })
@@ -92,10 +91,10 @@ if (require.main == module) {
       "Karmen websocket proxy server URL to use",
       "https://cloud.karmen.tech"
     )
-    .option("-p, --port <localPort>", "Local port to proxy", 80)
+    .option("-f, --forward <address>", "What should be forwarded", "http://localhost")
     .option('-v, --verbosity <verbosityLevel>', 'verbosity level (SILENT, ERROR, WARNING, INFO, DEBUG)', parseVerbosity, 'INFO')
-    .action((key, { url, port, verbosity }) => {
-      openConnection({ serverUrl: url, key, port, verbosityLevel: verbosity })
+    .action((key, { url, forward, verbosity }) => {
+      openConnection({ serverUrl: url, key, forward, verbosityLevel: verbosity })
     })
 
   program.parse(process.argv)
