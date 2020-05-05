@@ -29,7 +29,7 @@ option.
 karmen_key=$(docker run fragaria/karmen-octoprint-connector:latest generate-key --raw)
 
 # Open the tunnel
-docker run --init fragaria/karmen-octoprint-connector:latest connect $karmen_key
+docker run --init --net=host fragaria/karmen-octoprint-connector:latest connect $karmen_key
 ```
 
 ## Using npx

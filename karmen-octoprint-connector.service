@@ -11,7 +11,7 @@ TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull fragaria/karmen-octoprint-connector
-ExecStart=/usr/bin/docker run --rm --init --name %n fragaria/karmen-octoprint-connector:latest connect --url $SERVER_URL --port $LOCAL_PORT $KEY
+ExecStart=/usr/bin/docker run --rm --init --net=host --name %n fragaria/karmen-octoprint-connector:latest connect --url $SERVER_URL --port $LOCAL_PORT $KEY
 Restart=always
 RestartSec=1000
 User=pi
