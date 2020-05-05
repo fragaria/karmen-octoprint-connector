@@ -1,0 +1,23 @@
+# A systemd script to run karmen-octoprint-connector resiliently.
+# This script expects docker to be available, make sure you install it first.
+[Unit]
+Description=Karmen OctoPrint connector
+After=docker.service
+Requires=docker.service
+After=network.target
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull fragaria/karmen-octoprint-connector
+ExecStart=/usr/bin/docker run --rm --init --name %n fragaria/karmen-octoprint-connector:latest connect --url $SERVER_URL --port $LOCAL_PORT $KEY
+Restart=always
+RestartSec=1000
+User=pi
+Group=pi
+Environment=PATH=/usr/bin:/usr/local/bin
+EnvironmentFile=/etc/karmen-octoprint-connector.conf
+
+[Install]
+WantedBy=multi-user.target

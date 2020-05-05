@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM arm32v7/node:alpine
 
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh

@@ -41,6 +41,25 @@ karmen_key=$(npx karmen-octoprint-connector generate-key --raw)
 npx karmen-octoprint-connector connect $karmen_key
 ```
 
+## Running as systemd service
+
+For production use, we recommend running the octoprint connector in more
+resilient fashion as a systemd service. There is an example [systemd service
+config](./karmen-octoprint-connector.service) as well as [environment
+file](./karmen-octoprint-connector.conf) you can use.
+
+Save the service config file to
+`/etc/systemd/system/karmen-octoprint-connector.service`. Save the environment
+file to `/etc/karmen-octoprint-connector.conf` and modify it according to your
+needs: **don't forget to specify your connection key**. Finally load the service:
+
+```
+sudo systemctl daemon-reload
+sudo systemctl start karmen-octoprint-connector.service
+```
+
+You're good to go!
+
 ## License
 
 All of the code herein is copyright 2020 Fragaria s.r.o. and released under the
