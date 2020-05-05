@@ -3,6 +3,7 @@
 
 const WebSockProxyClient = require("karmen_ws/client/client")
     .WebSockProxyClient,
+  config = require("karmen_ws/config"),
   cuid = require("cuid"),
   consola = require("consola"),
   colors = require('colors')
@@ -14,8 +15,11 @@ function generateKey() {
   return `octoprint/${token}`
 }
 
-function openConnection(serverUrl, key, localPort = 80) {
+function openConnection({ serverUrl, key, localPort = 80, verbosityLevel = 3 } = {}) {
   const wsProxy = new WebSockProxyClient(key)
+
+  // Unfortunately cannot find a better way to override.
+  config.logVerbosity = verbosityLevel;
 
   return new Promise((resolve, reject) => {
     const forwardTo = `http://localhost:${localPort}`
@@ -46,6 +50,24 @@ function openConnection(serverUrl, key, localPort = 80) {
   })
 }
 
+function parseVerbosity(verbosityString) {
+  switch (verbosityString) {
+    case 'SILENT':
+      return 0
+    case 'ERROR':
+      return 1
+    case 'WARNING':
+      return 3
+    case 'INFO':
+      return 5
+    case 'DEBUG':
+      return 10
+    default:
+      return 3
+  }
+}
+
+
 if (require.main == module) {
   program.version(pkg.version)
 
@@ -71,8 +93,9 @@ if (require.main == module) {
       "https://cloud.karmen.tech"
     )
     .option("-p, --port <localPort>", "Local port to proxy", 80)
-    .action((key, options) => {
-      openConnection(options.url, key, options.port)
+    .option('-v, --verbosity <verbosityLevel>', 'verbosity level (SILENT, ERROR, WARNING, INFO, DEBUG)', parseVerbosity, 'INFO')
+    .action((key, { url, port, verbosity }) => {
+      openConnection({ serverUrl: url, key, port, verbosityLevel: verbosity })
     })
 
   program.parse(process.argv)
