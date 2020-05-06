@@ -24,10 +24,10 @@
   },
   "homepage": "https://github.com/fragaria/karmen-octoprint-connector#readme",
   "dependencies": {
-    "colors": "^1.4.0",
+    "chalk": "^4.0.0",
     "commander": "^5.1.0",
-    "consola": "^2.11.3",
     "cuid": "^2.1.8",
-    "karmen_ws": "github:fragaria/websocket-proxy#v0.16"
+    "karmen_ws": "github:fragaria/websocket-proxy#v0.16",
+    "signale": "^1.4.0"
   }
 }

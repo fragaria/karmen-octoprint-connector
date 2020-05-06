@@ -5,14 +5,54 @@ const WebSockProxyClient = require("karmen_ws/client/client")
     .WebSockProxyClient,
   config = require("karmen_ws/config"),
   cuid = require("cuid"),
-  consola = require("consola"),
-  colors = require("colors")
+  signale = require("signale"),
+  chalk = require("chalk")
 const { program } = require("commander")
 const pkg = require("./package")
 
 function generateKey() {
   const token = cuid()
   return `octoprint-${token}`
+}
+
+const loggerOpts = {
+  types: {
+    connected: {
+      badge: "🔗",
+      label: "Connected",
+      color: "green",
+      logLevel: "debug",
+    },
+    error: {
+      badge: "❌",
+      label: "Error",
+      color: "red",
+      logLevel: "error",
+    },
+    note: {
+      badge: "📓",
+      label: "Note",
+      color: "blue",
+      logLevel: "debug",
+    },
+  },
+}
+
+let logger
+let interactiveLogger
+
+const setupLoggers = (logLevel = "info") => {
+  const localOpts = {
+    logLevel,
+    disabled: !logLevel,
+  }
+
+  logger = new signale.Signale({ ...localOpts, ...loggerOpts })
+  interactiveLogger = new signale.Signale({
+    interactive: true,
+    ...localOpts,
+    ...loggerOpts,
+  })
 }
 
 /**
@@ -27,34 +67,24 @@ function openConnection(
 
   const wsProxy = new WebSockProxyClient(key)
   const connection = wsProxy.connect(serverUrl, { forwardTo: forward })
+  let errored = false
 
   connection
     .on("error", err => {
-      consola.error(
+      errored = true
+      logger.error(
         `An error occurred while connecting to ${serverUrl}. Is it running?`,
         err
       )
     })
     .on("open", () => {
-      if (reportConnectionInit) {
-        consola.success(
-          `Websocket tunnel`,
-          colors.green(serverUrl),
-          `-> OctoPrint box on`,
-          colors.green(forward),
-          `has been opened.`
-        )
-        consola.info(
-          `Use following key to register your device with Karmen:`,
-          colors.cyan(key)
-        )
-      } else {
-        console.log(`Connection has been re-opened.`)
-      }
+      interactiveLogger.connected(`Connection established.`)
     })
     .on("close", () => {
-      // For some reason, using consola here leads to weird message dupes?
-      console.log("Connection has been closed on the remote server.")
+      if (!errored) {
+        // For some reason, using consola here leads to weird message dupes?
+        interactiveLogger.note("Connection has been closed, reconnecting ...")
+      }
     })
 
   return connection
@@ -65,26 +95,39 @@ function openConnection(
  *
  * When connection closes on the remote end, reconnect.
  */
-function keepAlive(connectionBuilder, firstRun) {
-  const connection = connectionBuilder(firstRun)
+function keepAlive(connectionBuilder) {
+  const connection = connectionBuilder()
   // Makes sure connection is re-created when the original one is closed.
-  connection.webSocket.once("close", () => keepAlive(connectionBuilder, false))
+  connection.webSocket.once("close", () => keepAlive(connectionBuilder))
+  connection.on("error", () => {
+    // Make sure stdio is flushed prior to exit
+    // @see: https://github.com/nodejs/node/issues/6456 for more details
+    ;[process.stdout, process.stderr].forEach(s => {
+      s &&
+        s.isTTY &&
+        s._handle &&
+        s._handle.setBlocking &&
+        s._handle.setBlocking(true)
+    })
+
+    process.exit(1)
+  })
 }
 
 function parseVerbosity(verbosityString) {
   switch (verbosityString) {
     case "SILENT":
-      return 0
+      return { wsVerbosity: 0, ownVerbosity: null }
     case "ERROR":
-      return 1
+      return { wsVerbosity: 1, ownVerbosity: "error" }
     case "WARNING":
-      return 3
+      return { wsVerbosity: 3, ownVerbosity: "warn" }
     case "INFO":
-      return 5
+      return { wsVerbosity: 3, ownVerbosity: "info" }
     case "DEBUG":
-      return 10
+      return { wsVerbosity: 10, ownVerbosity: "info" }
     default:
-      return 3
+      return { wsVerbosity: 3, ownVerbosity: "info" }
   }
 }
 
@@ -100,7 +143,8 @@ if (require.main == module) {
       if (options.raw) {
         console.log(key)
       } else {
-        consola.log(`Your Karmen connection key is:`, colors.cyan(key))
+        setupLoggers()
+        signale.log(`Your Karmen connection key is:`, chalk.cyan(key))
       }
     })
 
@@ -121,16 +165,36 @@ if (require.main == module) {
       "-v, --verbosity <verbosityLevel>",
       "verbosity level (SILENT, ERROR, WARNING, INFO, DEBUG)",
       parseVerbosity,
-      "INFO"
+      { wsVerbosity: 3, ownVerbosity: "info" }
     )
     .action((key, { url, forward, verbosity }) => {
-      const connectionBuilder = reportConnectionInit =>
-        openConnection(
-          { serverUrl: url, key, forward, verbosityLevel: verbosity },
-          reportConnectionInit
-        )
+      const { wsVerbosity, ownVerbosity } = verbosity
 
-      keepAlive(connectionBuilder, true)
+      const connectionBuilder = () =>
+        openConnection({
+          serverUrl: url,
+          key,
+          forward,
+          verbosityLevel: wsVerbosity,
+        })
+
+      // Reconfigure log level. Disble for null verbosity level.
+      setupLoggers(ownVerbosity)
+
+      logger.note(
+        `Opening a websocket tunnel`,
+        chalk.green(url),
+        `-> OctoPrint box on`,
+        chalk.green(forward),
+        "..."
+      )
+
+      logger.note(
+        `Use following key to register your device with Karmen:`,
+        chalk.cyan(key)
+      )
+
+      keepAlive(connectionBuilder)
     })
 
   program.parse(process.argv)
