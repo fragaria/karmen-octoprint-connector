@@ -41,9 +41,10 @@ const loggerOpts = {
 let logger
 let interactiveLogger
 
-const setupLoggers = (logLevel = "info") => {
+const setupLoggers = logLevel => {
   const localOpts = {
     logLevel,
+    // Logging disabled for null verbosity level.
     disabled: !logLevel,
   }
 
@@ -62,7 +63,7 @@ function openConnection(
   { serverUrl, key, forward, verbosityLevel },
   reportConnectionInit
 ) {
-  // Unfortunately cannot find a better way to override.
+  // Couldn't find a better way to override unfortunately.
   config.logVerbosity = verbosityLevel
 
   const wsProxy = new WebSockProxyClient(key)
@@ -81,8 +82,8 @@ function openConnection(
       interactiveLogger.connected(`Connection established.`)
     })
     .on("close", () => {
+      // Won't reconnect on error so no output.
       if (!errored) {
-        // For some reason, using consola here leads to weird message dupes?
         interactiveLogger.note("Connection has been closed, reconnecting ...")
       }
     })
@@ -97,10 +98,9 @@ function openConnection(
  */
 function keepAlive(connectionBuilder) {
   const connection = connectionBuilder()
-  // Makes sure connection is re-created when the original one is closed.
-  connection.webSocket.once("close", () => keepAlive(connectionBuilder))
+
   connection.on("error", () => {
-    // Make sure stdio is flushed prior to exit
+    // Ensure stdio is flushed prior to exitting.
     // @see: https://github.com/nodejs/node/issues/6456 for more details
     ;[process.stdout, process.stderr].forEach(s => {
       s &&
@@ -112,6 +112,9 @@ function keepAlive(connectionBuilder) {
 
     process.exit(1)
   })
+
+  // Make sure connection is re-created when the original one is closed.
+  connection.webSocket.once("close", () => keepAlive(connectionBuilder))
 }
 
 function parseVerbosity(verbosityString) {
@@ -143,7 +146,7 @@ if (require.main == module) {
       if (options.raw) {
         console.log(key)
       } else {
-        setupLoggers()
+        setupLoggers("debug")
         signale.log(`Your Karmen connection key is:`, chalk.cyan(key))
       }
     })
@@ -178,7 +181,6 @@ if (require.main == module) {
           verbosityLevel: wsVerbosity,
         })
 
-      // Reconfigure log level. Disble for null verbosity level.
       setupLoggers(ownVerbosity)
 
       logger.note(
