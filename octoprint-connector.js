@@ -10,11 +10,6 @@ const WebSockProxyClient = require("karmen_ws/client/client")
 const { program } = require("commander")
 const pkg = require("./package")
 
-function generateKey() {
-  const token = cuid()
-  return `octoprint-${token}`
-}
-
 const loggerOpts = {
   types: {
     connected: {
@@ -74,7 +69,7 @@ function openConnection(
     .on("error", err => {
       errored = true
       logger.error(
-        `An error occurred while connecting to ${serverUrl}. Is it running?`,
+        `An error occurred while connecting to ${serverUrl}. Do you have a right connection key? Is it running?`,
         err
       )
     })
@@ -138,26 +133,12 @@ if (require.main == module) {
   program.version(pkg.version)
 
   program
-    .command("generate-key")
-    .description("Generate a new token for linking with Karmen.")
-    .option("-r, --raw", "Just output the key without info message")
-    .action(options => {
-      const key = generateKey()
-      if (options.raw) {
-        console.log(key)
-      } else {
-        setupLoggers("debug")
-        signale.log(`Your Karmen connection key is:`, chalk.cyan(key))
-      }
-    })
-
-  program
     .command("connect <key>")
-    .description("Open the websocket proxy tunnel to Karmen")
+    .description("Open and maintain a websocket proxy tunnel to Karmen cloud")
     .option(
       "-u, --url <serverUrl>",
       "Karmen websocket proxy server URL to use",
-      "https://cloud.karmen.tech"
+      "https://cloud.karmen.tech/octoprint-connector"
     )
     .option(
       "-f, --forward <address>",
@@ -188,12 +169,9 @@ if (require.main == module) {
         chalk.green(url),
         `-> OctoPrint box on`,
         chalk.green(forward),
-        "..."
-      )
-
-      logger.note(
-        `Use following key to register your device with Karmen:`,
-        chalk.cyan(key)
+        "using key",
+        chalk.cyan(key),
+        "as the connection key ..."
       )
 
       keepAlive(connectionBuilder)

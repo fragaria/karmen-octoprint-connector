@@ -12,12 +12,9 @@ up proper networking to make things safe from the outside.
 
 Linking your box is fairly simple, the outline is as follows:
 
-1. Generate your connection key - you will use this key to register your box in
-   Karmen in the last step
-2. Spawn a websocket tunnel - this will open the connection to the Karmen cloud
-3. [Sign up](https://cloud.karmen.tech/register) for Karmen
-4. Log in and add your printer using the connection key from the first step as
-   the device token
+1. [Sign up](https://cloud.karmen.tech/register) for Karmen
+2. Log in and add a new printer with *Other device* option - you will be granted with a connection key
+3. Spawn a websocket tunnel - this will open the connection to the Karmen cloud, use the connection from previous step to authenticate
 
 ## Running using Docker
 
@@ -25,11 +22,10 @@ In case you don't have NPM installed, using Docker is probably the easiest
 option.
 
 ```
-# Generate your connection key and store it
-karmen_key=$(docker run fragaria/karmen-octoprint-connector:latest generate-key --raw)
+karmen_connection_key="your key"
 
 # Open the tunnel
-docker run --init --net=host fragaria/karmen-octoprint-connector:latest connect $karmen_key
+docker run --init --net=host fragaria/karmen-octoprint-connector:latest connect $karmen_connection_key
 ```
 
 ## Using npx
@@ -37,11 +33,10 @@ docker run --init --net=host fragaria/karmen-octoprint-connector:latest connect 
 If you have NPM installed, using npx can't get any easier:
 
 ```
-# Generate your connection key and store it
-karmen_key=$(npx karmen-octoprint-connector generate-key --raw)
+karmen_connection_key="your key"
 
 # Open the tunnel
-npx karmen-octoprint-connector connect $karmen_key
+npx karmen-octoprint-connector connect $karmen_connection_key
 ```
 
 ## Running as systemd service
