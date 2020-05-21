@@ -76,6 +76,26 @@ sudo systemctl start karmen-octoprint-connector.service
 
 You're good to go!
 
+## Development
+
+This is just a simple node.js utility. Workflow is as usual:
+
+```
+npm i
+```
+
+Probably the hardest part is building the Docker image. Since this tool could be deployed to various architectures, multi-arch build is preferred. Make sure you have Docker with `buildx` support baked in. Then run:
+
+```
+export DOCKER_CLI_EXPERIMENTAL=enabled
+```
+
+And then trigger the multiarch build:
+
+```
+docker buildx build -t fragaria/karmen-octoprint-connector:latest . --platform=linux/amd64,linux/arm64,linux/arm/v7 --push
+```
+
 ## License
 
 All of the code herein is copyright 2020 Fragaria s.r.o. and released under the
