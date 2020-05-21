@@ -138,7 +138,7 @@ if (require.main == module) {
     .option(
       "-u, --url <serverUrl>",
       "Karmen websocket proxy server URL to use",
-      "https://cloud.karmen.tech/octoprint-connector"
+      "https://cloud.karmen.tech/connector/v1/"
     )
     .option(
       "-f, --forward <address>",
