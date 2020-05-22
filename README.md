@@ -76,6 +76,17 @@ sudo systemctl start karmen-octoprint-connector.service
 
 You're good to go!
 
+## Troubleshooting
+
+If you're having trouble establishing the connection, make sure you have a valid
+connection key. If things go wrong, connector will report HTTP status which can
+help you diagnose what is the problem:
+
+* `401` - invalid connection key, try generating a new one
+* `502` - problem with the connection endpoint, it's either down or you have a
+  wrong URL
+
+
 ## Development
 
 This is just a simple node.js utility. Workflow is as usual:
